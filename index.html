@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceFlow - Painel de Controle Financeiro</title>
+  <meta name="description" content="Painel de controle financeiro completo com gráficos de despesas mensais, suporte a modo escuro, metas, orçamentos e salvamento local.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/charts.css">
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Sidebar de Navegação -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">💎</div>
+      <div class="logo-text">Finance<span>Flow</span></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Visão Geral</span>
+      </a>
+      <a href="#transactions" class="nav-item" data-tab="transactions">
+        <span class="nav-icon">💳</span>
+        <span>Transações</span>
+      </a>
+      <a href="#reports" class="nav-item" data-tab="reports">
+        <span class="nav-icon">📈</span>
+        <span>Relatórios & Gráficos</span>
+      </a>
+      <a href="#budgets" class="nav-item" data-tab="budgets">
+        <span class="nav-icon">🎯</span>
+        <span>Orçamentos</span>
+      </a>
+      <a href="#goals" class="nav-item" data-tab="goals">
+        <span class="nav-icon">🐖</span>
+        <span>Metas & Cofrinhos</span>
+      </a>
+      <a href="#calculators" class="nav-item" data-tab="calculators">
+        <span class="nav-icon">🧮</span>
+        <span>Calculadoras</span>
+      </a>
+      <a href="#settings" class="nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span>
+        <span>Configurações</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="theme-toggle-container">
+        <span class="theme-label">🌓 Tema</span>
+        <div class="theme-segmented">
+          <button class="theme-btn" data-theme="light" title="Modo Claro">☀️</button>
+          <button class="theme-btn" data-theme="dark" title="Modo Escuro">🌙</button>
+          <button class="theme-btn" data-theme="system" title="Automático do Sistema">💻</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Painel Principal de Conteúdo -->
+  <div class="main-wrapper">
+    <!-- Cabeçalho Superior -->
+    <header class="top-header">
+      <div class="header-left">
+        <button id="menu-toggle-btn" class="menu-toggle-btn" title="Alternar Menu">☰</button>
+        <div class="page-title-box">
+          <h1 id="page-title">Visão Geral</h1>
+          <div id="page-subtitle" class="page-subtitle">Resumo das suas finanças e fluxo de caixa</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="period-select-wrap">
+          <select id="global-period-select" class="select-period" title="Filtrar por Período">
+            <option value="current-month" selected>📅 Mês Atual</option>
+            <option value="last-month">📅 Mês Anterior</option>
+            <option value="last-3-months">📊 Últimos 3 Meses</option>
+            <option value="current-year">📆 Este Ano</option>
+            <option value="all">🌐 Todo o Histórico</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="window.transactionManager.openAddModal('expense')" title="Atalho: Tecla N">
+          <span>+</span> <span>Nova Transação</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Área de Conteúdo das Abas -->
+    <main class="content-area">
+
+      <!-- ========================================================
+           ABA 1: VISÃO GERAL (DASHBOARD)
+           ======================================================== -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <!-- 4 KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <div class="kpi-label">Saldo Acumulado</div>
+              <div id="kpi-balance" class="kpi-value">R$ 0,00</div>
+              <div class="kpi-subtext">Histórico geral de todas as contas</div>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-balance">💰</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <div class="kpi-label">Receitas do Mês</div>
+              <div id="kpi-income" class="kpi-value" style="color: var(--income);">R$ 0,00</div>
+              <div class="kpi-subtext">Salários, freelas e rendimentos</div>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-income">📈</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <div class="kpi-label">Despesas do Mês</div>
+              <div id="kpi-expense" class="kpi-value" style="color: var(--expense);">R$ 0,00</div>
+              <div class="kpi-subtext">Gastos fixos e variáveis</div>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-expense">📉</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <div class="kpi-label">Balanço / Economia</div>
+              <div id="kpi-savings" class="kpi-value">R$ 0,00</div>
+              <div id="kpi-savings-rate" class="kpi-subtext">0% do total ganho</div>
+            </div>
+            <div class="kpi-icon-wrap kpi-icon-savings">🎯</div>
+          </div>
+        </div>
+
+        <!-- Alerta de Orçamento Rápido -->
+        <div id="dashboard-budget-alerts" style="margin-bottom: 1.5rem;"></div>
+
+        <!-- Gráficos Principais do Dashboard -->
+        <div class="dashboard-charts-grid">
+          <!-- Gráfico de Evolução Mensal -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📊 Evolução Mensal (Receitas vs Despesas)</div>
+                <div class="card-subtitle">Comparativo histórico dos últimos 6 meses</div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color-dot" style="background: var(--income);"></span> Receitas</div>
+                <div class="legend-item"><span class="legend-color-dot" style="background: var(--expense);"></span> Despesas</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="dashboard-monthly-chart" class="chart-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico de Donut por Categoria -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🍩 Despesas por Categoria</div>
+                <div class="card-subtitle">Distribuição no período selecionado</div>
+              </div>
+            </div>
+            <div class="chart-container compact" style="height: 190px;">
+              <canvas id="dashboard-donut-chart" class="chart-canvas"></canvas>
+            </div>
+            <div id="dashboard-category-list" class="category-breakdown-list" style="margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <!-- Grid Inferior (Transações Recentes & Metas) -->
+        <div class="dashboard-bottom-grid">
+          <!-- Últimas Transações -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🕒 Últimas Movimentações</div>
+              <button class="btn btn-ghost btn-sm" onclick="window.app.switchTab('transactions')">Ver Todas →</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th style="text-align: right;">Valor</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Resumo de Metas -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🐖 Metas Ativas</div>
+              <button class="btn btn-ghost btn-sm" onclick="window.app.switchTab('goals')">Gerenciar →</button>
+            </div>
+            <div id="dashboard-goals-preview" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 2: TRANSAÇÕES (RECEITAS & DESPESAS)
+           ======================================================== -->
+      <section id="tab-transactions" class="tab-pane">
+        <!-- Barra de Ferramentas de Filtros -->
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="tx-search-input" placeholder="Buscar por descrição, categoria ou nota...">
+          </div>
+
+          <div class="filter-group">
+            <select id="tx-filter-type" class="select-filter">
+              <option value="all">Todos os Tipos</option>
+              <option value="income">Apenas Receitas (+)</option>
+              <option value="expense">Apenas Despesas (-)</option>
+            </select>
+
+            <select id="tx-filter-category" class="select-filter">
+              <option value="all">Todas as Categorias</option>
+            </select>
+
+            <select id="tx-filter-method" class="select-filter">
+              <option value="all">Todos os Meios</option>
+            </select>
+
+            <select id="tx-filter-status" class="select-filter">
+              <option value="all">Status: Todos</option>
+              <option value="paid">Pago / Concluído</option>
+              <option value="pending">Pendente</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="window.financeExporter.exportCSV(true)" title="Exportar dados filtrados">
+              📥 Exportar CSV
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="window.transactionManager.openAddModal('expense')">
+              + Adicionar
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra de Resumo dos Filtros -->
+        <div id="tx-filter-summary" class="filter-summary-bar"></div>
+
+        <!-- Tabela Completa de Transações -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="sortable" onclick="window.transactionManager.setSorting('description')">Descrição / Detalhe</th>
+                  <th>Categoria</th>
+                  <th>Meio de Pagamento</th>
+                  <th class="sortable" onclick="window.transactionManager.setSorting('date')">Data</th>
+                  <th>Status</th>
+                  <th class="sortable" onclick="window.transactionManager.setSorting('amount')">Valor</th>
+                  <th style="text-align: right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tx-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Controles de Paginação -->
+        <div id="tx-pagination"></div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 3: RELATÓRIOS & GRÁFICOS AVANÇADOS
+           ======================================================== -->
+      <section id="tab-reports" class="tab-pane">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700;">Análise Financeira Aprofundada</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Comportamento de gastos, receitas e insights automáticos</p>
+          </div>
+          <button class="btn btn-secondary" onclick="window.financeExporter.printReport()">
+            🖨️ Imprimir / Salvar PDF
+          </button>
+        </div>
+
+        <!-- Insights Inteligentes -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-title" style="margin-bottom: 0.75rem;">🤖 Diagnóstico e Insights Financeiros</div>
+          <div id="reports-insights-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem;"></div>
+        </div>
+
+        <!-- Gráfico 1: Histórico de 12 Meses -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📈 Histórico Anual de Fluxo (12 Meses)</div>
+              <div class="card-subtitle">Evolução do volume total de entradas e saídas</div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color-dot" style="background: var(--income);"></span> Receitas</div>
+              <div class="legend-item"><span class="legend-color-dot" style="background: var(--expense);"></span> Despesas</div>
+            </div>
+          </div>
+          <div class="chart-container tall">
+            <canvas id="reports-historical-chart" class="chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-charts-grid">
+          <!-- Gráfico 2: Fluxo de Caixa Diário Acumulado -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🌊 Fluxo de Caixa Diário Acumulado</div>
+                <div class="card-subtitle">Progressão do saldo líquido ao longo dos dias do mês</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="reports-cashflow-chart" class="chart-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Detalhamento por Forma de Pagamento -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">💳 Gastos por Forma de Pagamento</div>
+                <div class="card-subtitle">Pix vs Cartão vs Débito vs Dinheiro</div>
+              </div>
+            </div>
+            <div id="reports-methods-breakdown" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 4: ORÇAMENTOS & LIMITES (BUDGETS)
+           ======================================================== -->
+      <section id="tab-budgets" class="tab-pane">
+        <div id="budgets-overview-card" class="card" style="margin-bottom: 1.5rem;"></div>
+        
+        <div style="margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.15rem; font-weight: 700;">Limites de Gastos por Categoria</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Defina tetos mensais para manter suas finanças no controle</p>
+        </div>
+
+        <div id="budgets-grid" class="budget-grid"></div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 5: METAS & COFRINHOS (GOALS)
+           ======================================================== -->
+      <section id="tab-goals" class="tab-pane">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700;">Meus Objetivos Financeiros</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Acompanhe suas economias para viagens, reservas e compras planejadas</p>
+          </div>
+          <button class="btn btn-primary" onclick="window.goalManager.openNewGoalModal()">
+            + Criar Nova Meta
+          </button>
+        </div>
+
+        <div id="goals-grid" class="goals-grid"></div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 6: CALCULADORAS FINANCEIRAS
+           ======================================================== -->
+      <section id="tab-calculators" class="tab-pane">
+        <!-- Navegação entre Calculadoras -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <button class="btn btn-secondary calc-nav-btn active" data-calc="compound">
+            📈 Juros Compostos & Patrimônio
+          </button>
+          <button class="btn btn-secondary calc-nav-btn" data-calc="loan">
+            🏦 Simulador de Financiamento & Empréstimo
+          </button>
+        </div>
+
+        <!-- 1. Calculadora de Juros Compostos -->
+        <div id="calc-compound-view">
+          <div class="calculator-container">
+            <!-- Formulário de Parâmetros -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 1.25rem;">⚙️ Parâmetros do Investimento</div>
+              
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">Aporte Inicial (R$)</label>
+                <input type="number" id="calc-initial" class="form-input" value="5000" step="100">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">Aporte Mensal (R$)</label>
+                <input type="number" id="calc-monthly" class="form-input" value="1000" step="50">
+              </div>
+
+              <div class="form-row" style="margin-bottom: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">Taxa de Juros (%)</label>
+                  <input type="number" id="calc-rate" class="form-input" value="11.5" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Período da Taxa</label>
+                  <select id="calc-rate-type" class="form-select">
+                    <option value="annual" selected>Ao Ano (% a.a.)</option>
+                    <option value="monthly">Ao Mês (% a.m.)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Tempo do Investimento (Anos)</label>
+                <input type="number" id="calc-years" class="form-input" value="10" min="1" max="40">
+              </div>
+            </div>
+
+            <!-- Resultados e Gráfico -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 1.25rem;">📊 Projeção do Patrimônio Futuro</div>
+
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div style="background: var(--bg-app); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Total Acumulado</div>
+                  <div id="calc-res-total" style="font-size: 1.25rem; font-weight: 800; color: var(--income); font-family: var(--font-mono);">R$ 0,00</div>
+                </div>
+                <div style="background: var(--bg-app); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Total Investido</div>
+                  <div id="calc-res-invested" style="font-size: 1.15rem; font-weight: 700; color: var(--primary); font-family: var(--font-mono);">R$ 0,00</div>
+                </div>
+                <div style="background: var(--bg-app); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Ganhos</div>
+                  <div id="calc-res-interest" style="font-size: 1.15rem; font-weight: 700; color: #f59e0b; font-family: var(--font-mono);">R$ 0,00</div>
+                </div>
+              </div>
+
+              <div class="chart-container" style="height: 250px;">
+                <canvas id="compound-chart-canvas" class="chart-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabela de Evolução Anual -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-title" style="margin-bottom: 1rem;">📋 Detalhamento Ano a Ano</div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Período</th>
+                    <th>Total Investido</th>
+                    <th>Juros Rendidos</th>
+                    <th>Patrimônio Total</th>
+                  </tr>
+                </thead>
+                <tbody id="calc-breakdown-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Simulador de Financiamento (SAC vs Price) -->
+        <div id="calc-loan-view" style="display: none;">
+          <div class="calculator-container">
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 1.25rem;">⚙️ Dados do Empréstimo / Financiamento</div>
+              
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label">Valor do Empréstimo (R$)</label>
+                <input type="number" id="loan-amount" class="form-input" value="100000" step="1000">
+              </div>
+
+              <div class="form-row" style="margin-bottom: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">Taxa de Juros Anual (%)</label>
+                  <input type="number" id="loan-rate" class="form-input" value="12.0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Prazo (Meses)</label>
+                  <input type="number" id="loan-months" class="form-input" value="60" step="6">
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 1.25rem;">⚖️ Comparativo: Tabela Price vs SAC</div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <!-- Tabela Price -->
+                <div style="background: var(--bg-app); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem;">
+                  <div style="font-weight: 700; font-size: 1rem; color: var(--primary); margin-bottom: 0.5rem;">Tabela Price (Fixa)</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Parcelas iguais do início ao fim</div>
+
+                  <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Parcela Mensal</div>
+                    <div id="loan-price-pmt" style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">R$ 0,00</div>
+                  </div>
+
+                  <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Total Pago</div>
+                    <div id="loan-price-total" style="font-weight: 700; color: var(--text-main);">R$ 0,00</div>
+                  </div>
+
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Totais</div>
+                    <div id="loan-price-interest" style="font-weight: 700; color: var(--expense);">R$ 0,00</div>
+                  </div>
+                </div>
+
+                <!-- Tabela SAC -->
+                <div style="background: var(--bg-app); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem;">
+                  <div style="font-weight: 700; font-size: 1rem; color: var(--income); margin-bottom: 0.5rem;">Tabela SAC (Decrescente)</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Amortização constante, parcelas caem</div>
+
+                  <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">1ª Parcela ➔ Última Parcela</div>
+                    <div id="loan-sac-pmt" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);">R$ 0,00</div>
+                  </div>
+
+                  <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Total Pago</div>
+                    <div id="loan-sac-total" style="font-weight: 700; color: var(--text-main);">R$ 0,00</div>
+                  </div>
+
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Totais</div>
+                    <div id="loan-sac-interest" style="font-weight: 700; color: var(--expense);">R$ 0,00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ABA 7: CONFIGURAÇÕES & BACKUP
+           ======================================================== -->
+      <section id="tab-settings" class="tab-pane">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+          
+          <!-- Preferências Gerais -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 1.25rem;">🌐 Preferências de Exibição</div>
+            
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label">Moeda Padrão</label>
+              <select id="settings-currency-select" class="form-select">
+                <option value="BRL">Real Brasileiro (R$ - BRL)</option>
+                <option value="USD">Dólar Americano ($ - USD)</option>
+                <option value="EUR">Euro (€ - EUR)</option>
+              </select>
+            </div>
+
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+              O FinanceFlow armazena todas as suas informações de forma <strong>100% local e segura no seu navegador</strong> através de LocalStorage. Nenhuma informação financeira é enviada para servidores externos.
+            </div>
+          </div>
+
+          <!-- Backup & Restauração -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 1.25rem;">💾 Backup & Exportação de Dados</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <button class="btn btn-primary" onclick="window.financeExporter.exportJSON()">
+                📦 Fazer Backup Completo (JSON)
+              </button>
+
+              <button class="btn btn-secondary" onclick="document.getElementById('import-json-input').click()">
+                📂 Restaurar Backup (JSON)
+              </button>
+              <input type="file" id="import-json-input" accept=".json" style="display: none;">
+
+              <button class="btn btn-secondary" onclick="window.financeExporter.exportCSV(false)">
+                📊 Exportar Planilha Completa (CSV / Excel)
+              </button>
+            </div>
+          </div>
+
+          <!-- Gestão de Dados e Demonstração -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 1.25rem;">🛠️ Ferramentas e Dados</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <button class="btn btn-secondary" onclick="window.store.resetToSampleData(); window.app.refreshAllViews(); window.app.showToast('Dados de demonstração restaurados com sucesso!', 'success');">
+                🔄 Recarregar Dados de Demonstração
+              </button>
+
+              <button class="btn btn-danger" onclick="if(confirm('ATENÇÃO: Deseja apagar todas as transações, metas e configurações salvas localmente? Esta ação é irreversível.')) { window.store.clearAllData(); window.app.refreshAllViews(); window.app.showToast('Todos os dados locais foram limpos.', 'info'); }">
+                🗑️ Limpar Todos os Dados
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- ========================================================
+     MODAIS
+     ======================================================== -->
+
+<!-- 1. Modal de Nova / Editar Transação -->
+<div id="transaction-modal" class="modal-backdrop">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div id="modal-tx-title" class="modal-title">Nova Transação</div>
+      <button class="modal-close-btn" onclick="window.transactionManager.closeModal()">✕</button>
+    </div>
+
+    <form id="transaction-form">
+      <div class="modal-body">
+        <input type="hidden" id="tx-id-input">
+        <input type="hidden" id="tx-type-input" value="expense">
+
+        <!-- Alternador Receita / Despesa -->
+        <div class="type-toggle-group">
+          <button type="button" class="type-toggle-btn active expense" data-type="expense">
+            📉 Despesa
+          </button>
+          <button type="button" class="type-toggle-btn income" data-type="income">
+            📈 Receita
+          </button>
+        </div>
+
+        <!-- Descrição -->
+        <div class="form-group">
+          <label class="form-label">Descrição *</label>
+          <input type="text" id="tx-description" class="form-input" placeholder="Ex: Supermercado, Salário, Conta de Luz..." required>
+        </div>
+
+        <!-- Valor e Data -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Valor (R$) *</label>
+            <input type="number" id="tx-amount" class="form-input" placeholder="0,00" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data *</label>
+            <input type="date" id="tx-date" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- Categoria e Meio de Pagamento -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Categoria *</label>
+            <select id="tx-category-input" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Meio de Pagamento</label>
+            <select id="tx-method-input" class="form-select"></select>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label class="form-label">Status do Pagamento</label>
+          <select id="tx-status-input" class="form-select">
+            <option value="paid" selected>✓ Pago / Recebido</option>
+            <option value="pending">⏳ Pendente</option>
+          </select>
+        </div>
+
+        <!-- Observações -->
+        <div class="form-group">
+          <label class="form-label">Observações / Anotações (Opcional)</label>
+          <input type="text" id="tx-notes" class="form-input" placeholder="Detalhes adicionais, comprovantes, etc.">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.transactionManager.closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Transação</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 2. Modal de Ajustar Orçamento -->
+<div id="budget-modal" class="modal-backdrop">
+  <div class="modal-dialog" style="max-width: 420px;">
+    <div class="modal-header">
+      <div id="modal-budget-title" class="modal-title">Definir Orçamento</div>
+      <button class="modal-close-btn" onclick="window.budgetManager.closeModal()">✕</button>
+    </div>
+    <form id="budget-form">
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Defina o limite máximo mensal de gastos para a categoria <strong id="budget-category-name"></strong>.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Limite Mensal (R$)</label>
+          <input type="number" id="budget-limit-input" class="form-input" placeholder="Ex: 1500,00" step="10" min="0" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.budgetManager.closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Limite</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 3. Modal de Criar Meta -->
+<div id="new-goal-modal" class="modal-backdrop">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-title">Nova Meta Financeira</div>
+      <button class="modal-close-btn" onclick="window.goalManager.closeNewGoalModal()">✕</button>
+    </div>
+    <form id="goal-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Nome do Objetivo *</label>
+          <input type="text" id="goal-name-input" class="form-input" placeholder="Ex: Reserva de Emergência, Viagem Disney..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Valor Alvo (R$) *</label>
+            <input type="number" id="goal-target-input" class="form-input" placeholder="Ex: 20000" step="50" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valor Inicial Guardado (R$)</label>
+            <input type="number" id="goal-initial-input" class="form-input" placeholder="0" step="50" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data Limite Alvo</label>
+            <input type="date" id="goal-date-input" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emoji / Ícone</label>
+            <input type="text" id="goal-icon-input" class="form-input" value="🎯" maxlength="4">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cor de Destaque</label>
+          <input type="color" id="goal-color-input" class="form-input" value="#10b981" style="height: 42px; padding: 2px 6px;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.goalManager.closeNewGoalModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Meta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 4. Modal de Aporte / Resgate de Meta -->
+<div id="goal-action-modal" class="modal-backdrop">
+  <div class="modal-dialog" style="max-width: 420px;">
+    <div class="modal-header">
+      <div id="goal-action-title" class="modal-title">Movimentar Meta</div>
+      <button class="modal-close-btn" onclick="window.goalManager.closeActionModal()">✕</button>
+    </div>
+    <form id="goal-action-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Valor da Operação (R$) *</label>
+          <input type="number" id="goal-action-amount-input" class="form-input" placeholder="Ex: 500,00" step="10" min="0.01" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.goalManager.closeActionModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="goal-action-btn-text">Confirmar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 5. Modal de Atalhos de Teclado -->
+<div id="shortcuts-modal" class="modal-backdrop">
+  <div class="modal-dialog" style="max-width: 460px;">
+    <div class="modal-header">
+      <div class="modal-title">⌨️ Atalhos de Teclado</div>
+      <button class="modal-close-btn" onclick="document.getElementById('shortcuts-modal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Nova Transação</span>
+          <kbd style="background: var(--bg-app); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: bold;">N</kbd>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Alternar Tema (Claro / Escuro / Sistema)</span>
+          <kbd style="background: var(--bg-app); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: bold;">T</kbd>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Ajuda / Ver Atalhos</span>
+          <kbd style="background: var(--bg-app); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: bold;">?</kbd>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Fechar Modais e Janelas</span>
+          <kbd style="background: var(--bg-app); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: bold;">Esc</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Scripts em Ordem de Dependência -->
+<script src="js/sample-data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/budgets.js"></script>
+<script src="js/goals.js"></script>
+<script src="js/calculators.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
